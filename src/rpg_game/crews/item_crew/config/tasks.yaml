@@ -1,0 +1,37 @@
+provide_info:
+  description: >
+    Excute the tools 'read_theme' and 'read_option_description' and 'check_item' to get the theme and the option description.
+    and the current inventory information.
+    and pass the result to the item creator.
+  expected_output: >
+    the original result, don't do any change. Just use the tools to get the result.
+  agent: tool_executor
+
+create_item:
+  description: >
+    Create only one item based on the option description that the player choose and the theme
+    of the game after the tool_executor pass the information to you.
+    you will also have the current inventory information. to make sure you don't create a item that already exists.
+  expected_output: >
+    the item should be a dictionary like this:
+    {{
+      "item_number": don't use the same number as the existing item,
+      "item_name": the name of the item,
+      "ability": the ability of the item
+    }}
+    The ability of the item should not include any damage,
+    it is more like a function that can help the player character to do something.
+    Your item should be resonable and stick to the option description and the theme.
+    **Note**: You can only create one item!
+  agent: item_creator
+
+save_item:
+  description: >
+    Use the 'save_item' tool to save the dictionary that the item_creator created.
+  expected_output: >
+    Use the original dictionary from the item_creator.
+    Make sure the dictionary is valid according to the pydantic schema when 
+    you are using the 'save_item' tool.
+  agent: tool_executor
+  
+

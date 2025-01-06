@@ -1,0 +1,23 @@
+.env
+__pycache__/
+lib/
+game_config/
+
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# IDE specific files
+.idea/
+.vscode/
+*.pyc
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Local development
+*.log
+.DS_Store

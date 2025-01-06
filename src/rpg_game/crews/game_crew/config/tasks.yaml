@@ -1,0 +1,107 @@
+information_providing:
+  description: >
+    use 'read_character_info', 'read_theme', 'read_inventory_info', 'read_current_chapter', 'read_round_result' tools to get the information.
+    than pass the original information to the condition_checker.
+  expected_output: >
+    pass all the result from the tools you excuted to the condition_checker.
+    do not do anything else.
+  agent: tool_executor
+
+check_game_condition:
+  description: >
+    Right now is in progress number {progress_number}, read all the information from the tool_executor that passed to you
+    Generate a full summary of the game and report it to the rpg_novel_game_writer.
+    The maximum health point of the character is 5 so besure to interpret health condition based on that.
+    **Note**: If the round result exist, you should focus more on the round result and let the rpg_novel_game_writer know that:
+    - the player is alive or not
+    - the player's option_description
+    - the player's option is success or not
+    - the player's option is getting item or not
+    - the player's new item name and ability
+  expected_output: >
+    Your report should very comprehensive, and should not miss any information from those files information.
+    focus more on the round result(if no, just ignore it), and the game's current status.
+    Your report should be informative and helpful for the rpg_novel_game_writer to write the novel.
+    The report should be in markdown format.
+  agent: condition_checker
+
+write_novel:
+  description: >
+    Base on the summary that was provided by the condition_checker, continue to write the novel.
+    the current progress is {progress_number} which means you should write chapter {progress_number},
+    if the progress is 1, you will write the novel like the game is just started.
+    The maximum progress number is {max_progress_number}. Be sure to stage the novel based on the progress number.
+    Your novel should be very interesting and engaging, and should be very connected to the option that the player choose
+    (if no, just ignore it), and the game's current status. If the player aquired a new item, you should mention it in the novel.
+    Your novel chapter should always leave a suspense for the player to continue.
+    Also leave some hint for the player to continue the game.
+    **Note**: You don't need to provide the question for the player to choose, just write the novel.
+  expected_output: >
+    The novel should be in markdown format without ```, the only header you can have is the chapter number like
+    chapter 1, chapter 2, etc. depeding on the progress number. Other than that, you can bold the important words or sentences.
+    or use italic to emphasize the important words or sentences.
+    If you recieve the round result, make sure to structure the novel like this:
+    - Chapter {progress_number}
+    - what happened after the player choose the option what item he/she got(if any)
+    - you should interpret the round result and write the novel based on the round result.
+    **Note**: You don't need to provide the question for the player to choose, just write the novel.
+  agent: rpg_novel_game_writer
+
+store_novel:
+  description: >
+    Store the novel to the folder.
+  expected_output: >
+    store the novel from the rpg_novel_game_writer to the folder.
+    Here is what you need to do:
+    - Use 'write_novel' tool to write this chapter to the folder.
+    - Use 'current_chapter' tool to also save the this chapter to the folder for future use.
+    **Note**: You use string as the input fot the tools, do not use dictionary or any other data structure.
+  agent: tool_executor
+
+excute_probability:
+  description: >
+    here is what you need to do:
+    - Use 'options_and_probabilities' tool to get the number of options for the player to choose and the probability of success for each option.
+    **Note**: Except you encounter an error, you should only excute this tool once.
+    - Use 'read_inventory' tool to get the inventory information of the player.
+  expected_output: >
+    pass all the result from the tools you excuted to the rpg_option_maker.
+  agent: tool_executor
+
+make_options:
+  description: >
+    Review the options and probabilities provided by the tool_executor, and according to the current novel, 
+    write the appropriate description for each options.
+    Use the same number of options, probability of success,
+    and probability of getting item. Write the description for each options.
+    If the success probility is high, make your description more safe but still interesting.
+    If the success probility is low, make your description more risky but highly rewarding.
+  expected_output: >
+    The output should be a dictionary that follow the pydantic model Options.
+    it should look like this:
+    {{
+      "options": [
+        {{
+          "description": "The question and movement for the player for this option",
+          "option_number": 1,
+          "probability_of_success": 70,
+          "probability_of_getting_item": 30,
+          "item_used": item_number or None (if no item is used)
+        }}
+      ]
+    }}
+    **Note**: Your description should follow the same style and format as the last chapter written by the rpg_novel_game_writer.
+    You can have only 1 option with the item inventory, and the item inventory should be the last option.
+    make sure your descriptions are coherent with the current novel.
+    Do not make the numbers up, use the information from the tool_executor exactly.
+  agent: rpg_option_maker
+
+store_options:
+  description: >
+    Store the options to the folder.
+  expected_output: >
+    store the options from the rpg_option_maker to the folder.
+    Here is what you need to do:
+    check again to see if the dictionary is valid to the Options pydantic model.
+  agent: tool_executor
+
